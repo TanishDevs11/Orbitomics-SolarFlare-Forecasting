@@ -76,6 +76,10 @@ class NowcastEngine:
 
         # --- State transitions ---
         if self.state == "QUIET":
+            # Guard: background SXR is ~5e-8 W/m²; B-class starts at 1e-7.
+            # Any trigger below B-class is background noise, not a flare onset.
+            if sxr < 1e-7:
+                return self._status()
             triggers = []
             if sxr_sigma > ONSET_SIGMA and sxr_slope > ONSET_SLOPE_THRESH:
                 triggers.append(f"SXR rising {sxr_sigma:.1f}x above baseline (slope={sxr_slope:+.3f} dec/min)")
@@ -109,8 +113,11 @@ class NowcastEngine:
                     self.current_event.peak_hxr = hxr
                     self.current_event.peak_time = ts
 
-            # Transition to PEAK when slope turns negative (flux no longer rising)
-            if sxr_slope < 0 and sxr >= self._peak_flux * 0.95:
+            # Transition to PEAK once flux is clearly declining.
+            # The 10-min rolling slope lags the actual peak by several minutes, so
+            # requiring sxr >= 95% of peak is too strict — the flux has already decayed.
+            # Use a clearly-negative slope threshold instead (half the onset threshold).
+            if sxr_slope < -ONSET_SLOPE_THRESH * 0.5:
                 self.state = "PEAK"
                 if self.current_event:
                     dt = (ts - self._onset_time).total_seconds() / 60.0

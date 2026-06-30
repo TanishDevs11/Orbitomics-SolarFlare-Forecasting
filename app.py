@@ -62,8 +62,8 @@ def load_and_prepare():
       - Training track: synthetic 3-day data (ML model — disclosed in UI)
     This ensures the model has enough labeled events regardless of live data availability.
     """
-    # Display track: live (or cached) GOES data
-    raw = load_goes_data()
+    # Display track: synthetic data (reproducible demo with embedded flares)
+    raw = load_goes_data(force_synthetic=True)
     df = preprocess(raw)
     df = compute_features(df)
     df, events = run_nowcast_batch(df)
@@ -114,12 +114,12 @@ with st.spinner("Initializing pipeline…"):
     df, all_events, labels, balance, train_metrics = load_and_prepare()
     model, feat_cols = get_model()
 
-is_synthetic = "synthetic" not in str(df.index.min())  # always show disclaimer
-
 # ─── Session state init ──────────────────────────────────────────────────────
 if "idx" not in st.session_state:
-    # Start replay at row 60 so rolling features (60-min window) are populated
-    st.session_state.idx = max(60, int(len(df) * 0.05))
+    # Start 20 min before M3 flare onset (peak at 40%, rise_min=12 → onset at 40%*n-12)
+    # Ensures judges see the HXR spike and flare onset immediately on demo start
+    m3_onset_idx = int(len(df) * 0.40) - 12
+    st.session_state.idx = max(60, m3_onset_idx - 20)
 if "prev_idx" not in st.session_state:
     st.session_state.prev_idx = st.session_state.idx
 if "playing" not in st.session_state:
@@ -158,9 +158,9 @@ forecast_prob = predict_proba_latest(model, feat_cols or [], current_df)
 # ─── Layout ─────────────────────────────────────────────────────────────────
 st.markdown("## ☀️ Orbitomics Solar Flare Nowcasting & Forecasting System")
 st.markdown(
-    '<div class="disclaimer">📡 Demo using <b>NOAA GOES X-ray data</b> as proxy for '
-    'Aditya-L1 SoLEXS (soft X-ray) &amp; HEL1OS (hard X-ray) — '
-    'pipeline is <b>data-source agnostic</b> and plugs into real Aditya-L1 data when available.</div>',
+    '<div class="disclaimer">📡 <b>Demo replay mode — synthetic GOES-like data</b> with embedded C/M-class flares. '
+    'Channels map to Aditya-L1 SoLEXS (soft X-ray) &amp; HEL1OS (hard X-ray) proxies — '
+    'pipeline is <b>data-source agnostic</b> and plugs into real NOAA GOES or Aditya-L1 data when available.</div>',
     unsafe_allow_html=True,
 )
 

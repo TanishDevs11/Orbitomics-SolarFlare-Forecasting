@@ -111,7 +111,11 @@ def generate_synthetic_data(days: int = 3, seed: int = 42) -> pd.DataFrame:
 
     def embed_flare(arr, peak_i, peak_flux, rise_min, decay_min, hxr_lead=3):
         """Embed a flare into sxr array; return (sxr_updated, hxr_burst)."""
-        hxr = arr.copy()
+        # Initialize HXR burst to zeros — np.maximum() with the base HXR array fills
+        # in background levels everywhere outside the flare region. Using arr.copy()
+        # (the SXR array) was a bug that made HXR ≈ SXR during quiet background,
+        # inflating hxr_sigma and log_hardness_ratio and causing constant false alarms.
+        hxr = np.zeros_like(arr)
         # Rise: linear in log-space (exponential in flux)
         for i in range(rise_min):
             t = i / rise_min

@@ -5,6 +5,53 @@
 **Prepared for:** Orbitomics  
 **Scope:** Phase 1 to Phase 4 only. This document does not choose a final architecture.
 
+---
+
+## Tech Stack
+
+| Layer | Library / Tool |
+|---|---|
+| Language | Python 3.x |
+| Data processing | pandas, numpy |
+| ML model | scikit-learn (RandomForestClassifier) |
+| Dashboard / UI | Streamlit |
+| Charts | Plotly |
+| Data fetch | requests (NOAA SWPC JSON API) |
+| Signal processing | scipy (cross-correlation for soft-hard lag) |
+
+---
+
+## Architecture Diagram
+
+```mermaid
+flowchart TD
+    A["NOAA GOES XRS\n(live JSON or synthetic fallback)"] --> B["data_loader.py\nFetch / cache / generate synthetic data"]
+    B --> C["preprocessing.py\nResample to 1-min grid, clip negatives, interpolate gaps"]
+    C --> D["features.py\nPhysics-informed feature engineering"]
+
+    D --> D1["Hardness ratio\nlog10(HXR / SXR)"]
+    D --> D2["Soft-hard lag\nRolling cross-correlation"]
+    D --> D3["Rolling slope / std\nOnset detection signals"]
+    D --> D4["Impulsiveness\nHXR spike / rise-time proxy"]
+
+    D --> E["nowcast.py\nRule-based state machine\nQUIET → ONSET → PEAK → DECAY"]
+    E --> E1["Explainable alert\nWhich signal triggered + phase"]
+
+    D --> F["labels.py\nBinary labels: flare onset\nwithin next 30 min?"]
+    F --> G["forecast_model.py\nRandomForest  predict_proba\nTSS / HSS evaluation"]
+    G --> G1["Calibrated risk score\n'Y% chance in next 30 min'"]
+
+    E1 --> H["app.py — Streamlit Dashboard"]
+    G1 --> H
+
+    H --> H1["Live-replay dual-channel chart\nSXR + HXR + hardness ratio"]
+    H --> H2["Status banner\nQUIET / ONSET / PEAK / DECAY"]
+    H --> H3["Event log table"]
+    H --> H4["Model eval panel\nTSS, HSS, Precision, Recall"]
+```
+
+---
+
 ## Executive Summary
 
 Solar flares are rapid releases of magnetic energy in the solar atmosphere. They are important scientifically because they reveal how magnetic energy is stored and explosively converted into plasma heating, particle acceleration, and radiation. They are important operationally because intense flares can affect radio communication, satellites, navigation, aviation operations, astronauts, and the near-Earth space environment.
