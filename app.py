@@ -87,8 +87,8 @@ def get_model():
 
 # ─── Sidebar ────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/b/bd/ISRO_Logo.svg", width=80)
-    st.title("☀️ Orbitomics\nSolar Flare Dashboard")
+    st.markdown("# ☀️ Orbitomics")
+    st.markdown("### Solar Flare Dashboard")
     st.caption("ISRO Hackathon 2026 — Challenge 15")
     st.divider()
 
