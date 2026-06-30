@@ -142,6 +142,7 @@ status = {"state": "QUIET", "flare_class": "—", "alert_text": "", "triggers": 
 for i in range(prev_idx, idx + 1):
     status = engine.update(df.iloc[i])
 st.session_state.prev_idx = idx
+current_row = df.iloc[idx]
 
 # Log new completed events
 known = {(e.onset_time, e.flare_class) for e in st.session_state.event_log}
