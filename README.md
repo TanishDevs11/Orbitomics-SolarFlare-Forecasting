@@ -1,5 +1,3 @@
-﻿# Orbitomics Research Knowledge Base
-
 **Project:** ISRO Bharatiya Antariksh Hackathon 2026, Challenge 15  
 **Topic:** Forecasting and/or nowcasting of solar flares using combined soft and hard X-ray data from Aditya-L1  
 **Prepared for:** Orbitomics  
