@@ -275,9 +275,17 @@ fig.update_layout(
     paper_bgcolor="#0e1117",
     plot_bgcolor="#0e1117",
     font=dict(color="#fafafa"),
-    legend=dict(orientation="h", y=1.08, bgcolor="rgba(0,0,0,0)"),
+    legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=-0.25,
+        xanchor="center",
+        x=0.5,
+        bgcolor="rgba(0,0,0,0)",
+        font=dict(size=11),
+    ),
     hovermode="x unified",
-    margin=dict(l=60, r=40, t=50, b=20),
+    margin=dict(l=60, r=40, t=50, b=80),
 )
 fig.update_yaxes(type="log", title="Flux (W/m²)", row=1, col=1,
                  gridcolor="#333", tickfont=dict(size=10))
